@@ -30,6 +30,18 @@
         gap: 1.5rem;
       }
 
+      .hero-image {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+      }
+
+      .hero-image img {
+        width: min(180px, 100%);
+        border-radius: 0.9rem;
+        box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+      }
+
       .toolbar {
         display: flex;
         justify-content: flex-end;
@@ -220,6 +232,12 @@
       <div class="toolbar">
         <button type="button" id="language-toggle">Sprache: Deutsch</button>
       </div>
+      <figure class="hero-image">
+        <img
+          src="https://4innovative-engineers.com/media/cache/thumb/8d59dbf1b12984db33828536ce4ba6af64545b98.jpeg"
+          alt="Schweißer mit Schutzmaske bei der Arbeit"
+        />
+      </figure>
       <h1 data-i18n="title">Empfohlene erforderliche Kehlnahtdicke</h1>
       <p class="lead" data-i18n="lead">
         Berechne die minimale und maximale empfohlene Kehlnahtdicke aus den
