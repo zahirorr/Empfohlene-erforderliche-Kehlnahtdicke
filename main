@@ -1,1 +1,242 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Empfohlene Kehlnahtdicke berechnen</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+      }
 
+      body {
+        margin: 0;
+        padding: 2.5rem 1rem;
+        display: flex;
+        justify-content: center;
+        background: radial-gradient(circle at top, #f4f6fb, #d6dde8 60%, #c8d0dc);
+      }
+
+      main {
+        width: min(640px, 100%);
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.15);
+        border-radius: 1rem;
+        padding: 2.25rem;
+        backdrop-filter: blur(6px);
+      }
+
+      h1 {
+        margin-top: 0;
+        font-size: clamp(1.75rem, 2.5vw + 1rem, 2.5rem);
+        text-align: center;
+        color: #24324b;
+      }
+
+      p.lead {
+        margin: 0 0 1.75rem;
+        color: #46556d;
+        text-align: center;
+      }
+
+      form {
+        display: grid;
+        gap: 1.25rem;
+      }
+
+      label {
+        display: grid;
+        gap: 0.35rem;
+        font-weight: 600;
+        color: #2d3b52;
+      }
+
+      input[type="number"] {
+        padding: 0.75rem 0.85rem;
+        border-radius: 0.65rem;
+        border: 1px solid #a8b4c6;
+        font-size: 1rem;
+      }
+
+      input[type="number"]:focus {
+        outline: none;
+        border-color: #3f6ad8;
+        box-shadow: 0 0 0 3px rgba(63, 106, 216, 0.2);
+      }
+
+      .input-with-unit {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .input-with-unit span {
+        font-weight: 600;
+        color: #3b4a64;
+      }
+
+      button {
+        justify-self: start;
+        padding: 0.8rem 1.6rem;
+        border: none;
+        border-radius: 999px;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        background: linear-gradient(135deg, #3f6ad8, #8a75f5);
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.75rem 1.5rem rgba(63, 106, 216, 0.35);
+      }
+
+      button:active {
+        transform: translateY(0);
+        box-shadow: none;
+      }
+
+      .results {
+        margin-top: 2rem;
+        display: grid;
+        gap: 0.9rem;
+        background: rgba(63, 106, 216, 0.12);
+        border-radius: 0.9rem;
+        padding: 1.2rem 1.5rem;
+      }
+
+      .results h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #26344d;
+      }
+
+      .result-line {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1c2840;
+      }
+
+      .hint {
+        margin-top: 2rem;
+        font-size: 0.95rem;
+        color: #5a6579;
+        background: rgba(255, 255, 255, 0.65);
+        padding: 1rem 1.2rem;
+        border-radius: 0.75rem;
+        border-left: 4px solid #8a75f5;
+      }
+
+      @media (max-width: 520px) {
+        main {
+          padding: 1.75rem;
+        }
+
+        .result-line {
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Empfohlene erforderliche Kehlnahtdicke</h1>
+      <p class="lead">
+        Berechne die minimale und maximale empfohlene Kehlnahtdicke aus den
+        Wandstärken zweier zu verbindender Bleche.
+      </p>
+      <form id="kehlnaht-form">
+        <label>
+          1. Wandstärke
+          <span class="input-with-unit">
+            <input
+              type="number"
+              id="thicknessA"
+              name="thicknessA"
+              min="0"
+              step="0.1"
+              required
+              placeholder="z. B. 6"
+              inputmode="decimal"
+            />
+            <span>mm</span>
+          </span>
+        </label>
+        <label>
+          2. Wandstärke
+          <span class="input-with-unit">
+            <input
+              type="number"
+              id="thicknessB"
+              name="thicknessB"
+              min="0"
+              step="0.1"
+              required
+              placeholder="z. B. 5"
+              inputmode="decimal"
+            />
+            <span>mm</span>
+          </span>
+        </label>
+        <button type="submit">Ergebnis anzeigen</button>
+      </form>
+
+      <section class="results" aria-live="polite">
+        <h2>Ergebnisse</h2>
+        <div class="result-line">
+          <span>min. a-Maß</span>
+          <span><output id="amin">–</output> mm</span>
+        </div>
+        <div class="result-line">
+          <span>max. a-Maß</span>
+          <span><output id="amax">–</output> mm</span>
+        </div>
+      </section>
+
+      <p class="hint">
+        Grundlage: a<sub>max</sub> = 0,7 · min(t<sub>1</sub>, t<sub>2</sub>) und
+        a<sub>min</sub> = √(max(t<sub>1</sub>, t<sub>2</sub>)) − 0,5. Eingaben in
+        Millimetern. Ergebnisse werden auf drei Nachkommastellen gerundet.
+      </p>
+    </main>
+
+    <script>
+      const form = document.getElementById("kehlnaht-form");
+      const resultAmin = document.getElementById("amin");
+      const resultAmax = document.getElementById("amax");
+
+      const formatNumber = (value) =>
+        Number.isFinite(value) ? value.toFixed(3).replace(".", ",") : "–";
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const t1 = parseFloat(form.thicknessA.value.replace(",", "."));
+        const t2 = parseFloat(form.thicknessB.value.replace(",", "."));
+
+        if (!Number.isFinite(t1) || !Number.isFinite(t2) || t1 <= 0 || t2 <= 0) {
+          resultAmin.textContent = "–";
+          resultAmax.textContent = "–";
+          return;
+        }
+
+        const tMin = Math.min(t1, t2);
+        const tMax = Math.max(t1, t2);
+
+        const aMax = 0.7 * tMin;
+        const aMin = Math.sqrt(tMax) - 0.5;
+
+        resultAmin.textContent = formatNumber(aMin);
+        resultAmax.textContent = formatNumber(aMax);
+      });
+    </script>
+  </body>
+</html>
