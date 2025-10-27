@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Empfohlene erforderliche Kehlnahtdicke</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f8f9fa;
+      color: #212529;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+      max-width: 520px;
+      width: 100%;
+      padding: 32px 36px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin: 0 0 0.5rem 0;
+      text-align: center;
+      color: #0d6efd;
+    }
+
+    p.description {
+      margin: 0 0 1.5rem 0;
+      text-align: center;
+      line-height: 1.5;
+      color: #495057;
+    }
+
+    form {
+      display: grid;
+      gap: 1rem;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      font-weight: 600;
+      color: #343a40;
+    }
+
+    input[type="number"] {
+      margin-top: 0.35rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #ced4da;
+      font-size: 1rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input[type="number"]:focus {
+      border-color: #0d6efd;
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+
+    button {
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #0d6efd;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #0b5ed7;
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .results {
+      margin-top: 1.5rem;
+      display: grid;
+      gap: 0.75rem;
+      background: #f1f3f5;
+      border-radius: 10px;
+      padding: 1rem;
+      font-size: 1rem;
+      color: #212529;
+    }
+
+    .result-value {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #0d6efd;
+    }
+
+    .error {
+      color: #d6336c;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    footer {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: #868e96;
+      text-align: center;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Empfohlene erforderliche Kehlnahtdicke</h1>
+    <p class="description">
+      Geben Sie die Wandstärken der zu verbindenden Bleche ein, um die empfohlene minimale
+      und maximale Kehlnahtdicke gem&auml;&szlig; g&auml;ngiger Praxisregeln zu bestimmen.
+    </p>
+
+    <form id="calculator" novalidate>
+      <label for="thickness1">
+        1. Wandst&auml;rke (mm)
+        <input type="number" id="thickness1" name="thickness1" min="0" step="0.1" required>
+      </label>
+
+      <label for="thickness2">
+        2. Wandst&auml;rke (mm)
+        <input type="number" id="thickness2" name="thickness2" min="0" step="0.1" required>
+      </label>
+
+      <button type="submit">Berechnen</button>
+      <p id="error" class="error" hidden></p>
+    </form>
+
+    <section class="results" id="results" hidden>
+      <div>
+        <span>Maximale Kehlnahtdicke a<sub>max</sub>:</span>
+        <div class="result-value"><span id="max-result">0.000</span> mm</div>
+      </div>
+      <div>
+        <span>Minimale Kehlnahtdicke a<sub>min</sub>:</span>
+        <div class="result-value"><span id="min-result">0.000</span> mm</div>
+      </div>
+    </section>
+
+    <footer>
+      Formeln:<br>
+      a<sub>max</sub> &ge; 0,7 &times; t<sub>min</sub><br>
+      a<sub>min</sub> &ge; t<sub>min</sub> / &radic;2 &minus; 0,5 mm
+    </footer>
+  </main>
+
+  <script>
+    const form = document.getElementById('calculator');
+    const errorElement = document.getElementById('error');
+    const resultsElement = document.getElementById('results');
+    const maxResultElement = document.getElementById('max-result');
+    const minResultElement = document.getElementById('min-result');
+
+    function formatNumber(value) {
+      return value.toLocaleString('de-DE', {
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 3
+      });
+    }
+
+    function calculateWeldThickness(t1, t2) {
+      const tMin = Math.min(t1, t2);
+      const max = 0.7 * tMin;
+      const min = Math.max(0, tMin / Math.SQRT2 - 0.5);
+
+      return {
+        min,
+        max,
+        tMin
+      };
+    }
+
+    function showError(message) {
+      errorElement.textContent = message;
+      errorElement.hidden = false;
+      resultsElement.hidden = true;
+    }
+
+    function clearError() {
+      errorElement.hidden = true;
+      errorElement.textContent = '';
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const thickness1 = Number(form.thickness1.value.replace(',', '.'));
+      const thickness2 = Number(form.thickness2.value.replace(',', '.'));
+
+      if (!Number.isFinite(thickness1) || !Number.isFinite(thickness2)) {
+        showError('Bitte geben Sie g&uuml;ltige Zahlenwerte ein.');
+        return;
+      }
+
+      if (thickness1 <= 0 || thickness2 <= 0) {
+        showError('Die Wandst&auml;rken m&uuml;ssen gr&ouml;&szlig;er als 0 sein.');
+        return;
+      }
+
+      clearError();
+
+      const { min, max } = calculateWeldThickness(thickness1, thickness2);
+
+      maxResultElement.textContent = formatNumber(max);
+      minResultElement.textContent = formatNumber(min);
+      resultsElement.hidden = false;
+    });
+  </script>
+</body>
+</html>
